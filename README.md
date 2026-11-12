@@ -9,6 +9,12 @@
 
 Tài liệu đề bài gốc được giữ bên dưới.
 
+## Giao diện demo cục bộ
+
+Chạy `python -X utf8 demo_ui.py --open`, hoặc mở `http://127.0.0.1:8765` sau khi khởi động server. Không cần cài thư viện, nhập API key hoặc gọi API để demo.
+
+Chọn H1 để trình chiếu điều tra nhiều bước; chọn H7 rồi chuyển giữa “Trước cải tiến” và “Sau cải tiến” để minh họa xử lý timeout. Có thể chọn cả 10 case bonus. Nút “Phát lại” trình chiếu các sự kiện trong file eval thật, không chạy một lượt AI mới. Nhấn Ctrl+C trong terminal để dừng server; dùng `--port 8766` nếu cổng mặc định đang bận.
+
 # Lab: Xây dựng Status Investigation Agent
 
 > **Hình thức: Bài cá nhân.** Mỗi cá nhân tự làm, tự tạo repo riêng và tự nộp link lên LMS.

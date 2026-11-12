@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Status Agent · Demo bài lab Day 04</title>
+<style>
+:root{--bg:#f4f6fa;--ink:#17243b;--muted:#617089;--line:#e1e7ef;--blue:#2859d8;--green:#087d67;--white:#fff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 "Segoe UI",system-ui,sans-serif}
+button,select{font:inherit}button{cursor:pointer}button:disabled{opacity:.45;cursor:default}button:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #8babff;outline-offset:3px}
+header{background:#12243e;color:white;padding:26px max(24px,calc((100vw - 1280px)/2))}header .top{display:flex;justify-content:space-between;gap:16px;align-items:center}.brand{font-size:12px;letter-spacing:2px;color:#a9bedb;text-transform:uppercase}h1{font-size:30px;line-height:1.2;margin:8px 0}header p{margin:0;color:#b5c5dc}.tag{border:1px solid #45607c;border-radius:24px;padding:6px 12px;white-space:nowrap;font-size:12px}
+main{max-width:1328px;margin:auto;padding:24px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:22px}.stat{background:white;border:1px solid var(--line);border-radius:14px;padding:18px 22px}.stat small{color:var(--muted)}.value{font-size:31px;font-weight:700;letter-spacing:-1px}.value span{font-size:15px;font-weight:400;letter-spacing:0;color:var(--muted)}.positive{color:var(--green)}
+.toolbar{background:white;border:1px solid var(--line);padding:18px;border-radius:14px;display:flex;align-items:end;gap:14px;flex-wrap:wrap;margin-bottom:18px}label{display:grid;gap:5px;font-size:12px;color:var(--muted)}select{border:1px solid #cfd7e3;background:white;color:var(--ink);padding:9px 34px 9px 10px;border-radius:8px;min-width:150px}button{border:1px solid var(--line);border-radius:8px;background:white;color:var(--ink);padding:10px 14px}.primary{background:var(--blue);border-color:var(--blue);color:white}.quick{margin-left:auto;display:flex;gap:8px}
+.notice{background:#eaf0ff;border:1px solid #d7e2ff;border-radius:10px;padding:10px 14px;color:#344f88;font-size:13px;margin-bottom:20px}.layout{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:20px;align-items:start}.panel{background:white;border:1px solid var(--line);border-radius:14px;overflow:hidden}.panel-head{padding:18px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:12px}h2{font-size:17px;margin:0}.panel-body{padding:20px}.eyebrow{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}#question{font-size:16px;margin:8px 0 18px}.meta{display:flex;gap:8px;flex-wrap:wrap}.badge{display:inline-block;background:#edf1f7;color:#4d5c74;border-radius:6px;padding:3px 8px;font-size:12px}.badge.ok{color:var(--green);background:#e6f5ee}.badge.warn{color:#996320;background:#fff2da}.controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}.progress-label{font-size:12px;color:var(--muted);margin:12px 0 4px}progress{width:100%;height:7px;accent-color:var(--blue)}
+.trace{max-height:610px;overflow:auto;padding:4px 20px 20px}.event{border-left:2px solid #dce5f4;margin-left:7px;padding:18px 0 3px 18px;position:relative}.event:before{content:"";position:absolute;left:-6px;top:25px;border:2px solid white;width:10px;height:10px;border-radius:50%;background:#6687d3}.event.tool:before{background:var(--green)}.event.validation:before{background:#dc9b34}.event-title{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-weight:600;font-size:14px}.event p{font-size:13px;color:var(--muted);margin:4px 0}.event details{font-size:12px;color:var(--muted)}summary{cursor:pointer}pre{background:#f5f7fb;border:1px solid var(--line);border-radius:8px;padding:12px;white-space:pre-wrap;overflow-wrap:anywhere;font:12px/1.6 Consolas,monospace;max-height:310px;overflow:auto}.answer{overflow-wrap:anywhere}.answer p{margin:7px 0}.answer h3{font-size:16px;margin:18px 0 6px}.answer a{color:var(--blue)}.answer .bullet{padding-left:15px;position:relative}.answer .bullet:before{content:"•";position:absolute;left:0}.grade{margin-top:20px;border-top:1px solid var(--line);padding-top:16px;font-size:13px}.grade p{margin:6px 0}.score{font-weight:700;font-size:21px;color:var(--green)}.error{background:#fff0ed;color:#9d3022;padding:14px;border-radius:10px;margin-bottom:16px}footer{max-width:1328px;margin:0 auto;padding:5px 24px 24px;color:var(--muted);font-size:12px}.empty{color:var(--muted);padding:20px 0}
+@media(max-width:850px){.layout{grid-template-columns:1fr}.quick{margin-left:0}.stats{gap:8px}.stat{padding:12px}.value{font-size:25px}header .top{align-items:start}.tag{display:none}main{padding:16px}.trace{max-height:440px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<header><div class="top"><div><div class="brand">Day 04 · L3A · LeSongThao</div><h1>Status Investigation Agent</h1><p>Từ câu hỏi đến bằng chứng: theo dõi cách agent điều tra sự cố.</p></div><span class="tag">Demo từ trace thật đã lưu</span></div></header>
+<main>
+<div id="error" role="alert" hidden></div>
+<section class="stats" aria-label="Kết quả đánh giá">
+ <div class="stat"><small>Trước cải tiến · bài chính</small><div class="value" id="before-score">—</div><small id="before-count"></small></div>
+ <div class="stat"><small>Sau cải tiến · bài chính</small><div class="value positive" id="after-score">—</div><small id="after-count"></small></div>
+ <div class="stat"><small>Bonus · điểm quy đổi tham khảo</small><div class="value positive" id="bonus-score">—</div><small id="bonus-count"></small></div>
+</section>
+<section class="toolbar" aria-label="Chọn nội dung demo">
+ <label>Bộ kết quả<select id="report" aria-label="Bộ kết quả"></select></label>
+ <label>Tình huống<select id="case" aria-label="Tình huống"></select></label>
+ <div class="quick"><button id="demo-h1">H1 · Điều tra nhiều bước</button><button id="demo-h7">H7 · Xử lý timeout</button></div>
+</section>
+<div class="notice">Đang xem kết quả từ các file eval đã lưu. “Phát lại” chỉ trình chiếu trace, không gọi AI hoặc status API. Dữ liệu snapshot không phải trạng thái dịch vụ hiện tại.</div>
+<div class="layout">
+ <section class="panel"><div class="panel-head"><h2>Hành trình điều tra</h2><span class="badge" id="case-id">—</span></div>
+  <div class="panel-body"><div class="eyebrow">Câu hỏi người dùng</div><p id="question"></p><div class="meta" id="meta"></div>
+   <div class="controls"><button class="primary" id="play">▶ Phát lại từng bước</button><button id="next">Bước tiếp</button><button id="all">Xem toàn bộ</button></div>
+   <div class="progress-label" id="progress-label" aria-live="polite"></div><progress id="progress" value="0" max="1" aria-label="Tiến độ phát lại"></progress>
+  </div><div id="trace" class="trace"></div>
+ </section>
+ <section class="panel"><div class="panel-head"><h2>Câu trả lời đã ghi nhận</h2><span class="score" id="case-score">—</span></div>
+  <div class="panel-body"><div id="answer" class="answer"></div><div class="grade"><div class="eyebrow">Nhận xét của bộ chấm</div><p id="reason"></p><p id="mechanical"></p><details><summary>Chi tiết điểm và token</summary><pre id="grade"></pre></details></div></div>
+ </section>
+</div>
+</main>
+<footer id="config">Đang tải kết quả…</footer>
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+let reports=[],current=null,visible=0,timer=null,requestId=0;
+const names={model:'AI quyết định bước tiếp theo',tool:'Thực thi công cụ',evidence_checklist:'Kiểm tra bằng chứng cần bổ sung',validation_missing_evidence:'Yêu cầu bổ sung bằng chứng',validation_missing_source:'Yêu cầu bổ sung nguồn',provider_error:'Lỗi kết nối AI'};
+function node(tag,text,cls){const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n}
+function showError(error){$('error').hidden=false;$('error').className='error';$('error').textContent=error.message||String(error)}
+async function get(url){const response=await fetch(url);const body=await response.json();if(!response.ok)throw new Error(body.error||'Không tải được dữ liệu.');return body}
+function stop(){if(timer)clearInterval(timer);timer=null;$('play').textContent='▶ Phát lại từng bước'}
+function inline(parent,text){const pattern=/(\*\*([^*]+)\*\*|\[([^\]]+)\]\((https?:\/\/[^\s)]+)\))/g;let previous=0;for(const match of text.matchAll(pattern)){parent.append(document.createTextNode(text.slice(previous,match.index)));if(match[2])parent.append(node('strong',match[2]));else{const a=node('a',match[3]);a.href=match[4];a.target='_blank';a.rel='noopener noreferrer';parent.append(a)}previous=match.index+match[0].length}parent.append(document.createTextNode(text.slice(previous)))}
+function renderAnswer(text){$('answer').replaceChildren();for(const line of text.split('\n')){if(!line.trim())continue;let value=line,tag='p',cls='';if(/^#{1,6}\s/.test(line)){tag='h3';value=line.replace(/^#{1,6}\s+/,'')}else if(/^\s*[-*]\s/.test(line)){cls='bullet';value=line.replace(/^\s*[-*]\s+/,'')}const p=node(tag,undefined,cls);inline(p,value);$('answer').append(p)}}
+function renderTrace(){const trace=current?.result.trace||[];const fragment=document.createDocumentFragment();for(const event of trace.slice(0,visible)){const kind=event.event==='tool'?'tool':event.event==='model'?'':'validation';const card=node('div',undefined,'event '+kind);const heading=node('div',undefined,'event-title');heading.append(node('span','Bước '+event.step,'badge'),node('span',names[event.event]||event.event));card.append(heading);if(event.name)card.append(node('p',event.name));if(event.finish)card.append(node('p',event.finish==='tool_calls'?'AI yêu cầu dùng công cụ.':'AI kết thúc lượt: '+event.finish));if(event.result?.error)card.append(node('p','Kết quả: '+event.result.error));const detail=node('details');detail.append(node('summary','Xem dữ liệu thật'),node('pre',JSON.stringify(event,null,2)));card.append(detail);fragment.append(card)}if(!visible)fragment.append(node('div','Nhấn “Bước tiếp” hoặc “Phát lại” để bắt đầu.','empty'));$('trace').replaceChildren(fragment);$('progress').max=trace.length||1;$('progress').value=visible;$('progress-label').textContent='Đã hiển thị '+visible+' / '+trace.length+' sự kiện';$('next').disabled=visible>=trace.length;if(visible>=trace.length)stop()}
+function advance(){if(current){visible=Math.min(visible+1,current.result.trace.length);renderTrace()}}
+async function loadCase(){stop();const version=++requestId;$('error').hidden=true;try{const data=await get('/api/case?report='+encodeURIComponent($('report').value)+'&case='+encodeURIComponent($('case').value));if(version!==requestId)return;current=data;visible=data.result.trace.length;$('case-id').textContent=data.id;$('question').textContent=data.question;$('meta').replaceChildren();const tools=data.result.trace.filter(e=>e.event==='tool');const steps=new Set(tools.map(e=>e.step)).size;const status=data.result.status==='completed'?'Đã hoàn thành':data.result.status;$('meta').append(node('span',status,'badge '+(data.result.status==='completed'?'ok':'warn')),node('span',tools.length+' lần gọi công cụ','badge'),node('span',steps+' bước có công cụ','badge'));$('case-score').textContent=(data.grade.score??'Chưa chấm')+(data.grade.score==null?'':' / 100');renderAnswer(data.result.answer||'Lượt chạy chưa có câu trả lời hoàn tất.');$('reason').textContent=data.grade.reason||'Không có nhận xét.';const violations=data.grade.mechanical?.violations||[];$('mechanical').textContent=violations.length?'Kiểm tra bắt buộc: '+violations.join('; '):'Kiểm tra bắt buộc: không có vi phạm.';$('grade').textContent=JSON.stringify({grade:data.grade,agent_usage:data.result.usage},null,2);const report=reports.find(r=>r.key===$('report').value);$('config').textContent='Nguồn: '+report.file+' · Agent: '+report.config.model+' · Judge: '+report.config.judge_model+' · Giới hạn: '+report.config.max_steps+' lượt gọi AI · Điểm eval là tham khảo, khác điểm lab theo rubric.';renderTrace()}catch(error){if(version===requestId){current=null;showError(error)}}}
+function chooseReport(preferred){const report=reports.find(r=>r.key===$('report').value);$('case').replaceChildren();for(const c of report.cases){const option=node('option',c.id+' · '+(c.score??'Chưa chấm')+' điểm');option.value=c.id;$('case').append(option)}if(report.cases.some(c=>c.id===preferred))$('case').value=preferred;return loadCase()}
+$('report').addEventListener('change',()=>chooseReport($('case').value));$('case').addEventListener('change',loadCase);
+$('play').addEventListener('click',()=>{if(!current)return;if(timer){stop();return}visible=0;renderTrace();$('play').textContent='Ⅱ Tạm dừng';advance();if(visible<current.result.trace.length)timer=setInterval(advance,1100)});
+$('next').addEventListener('click',()=>{stop();advance()});$('all').addEventListener('click',()=>{stop();if(current){visible=current.result.trace.length;renderTrace()}});
+for(const id of ['h1','h7'])$('demo-'+id).addEventListener('click',()=>{$('report').value='after';chooseReport(id.toUpperCase())});
+(async()=>{try{reports=await get('/api/reports');for(const report of reports){const option=node('option',report.label);option.value=report.key;$('report').append(option);const key=report.key;const score=key==='bonus'?report.summary.bonus_points_0_15:report.summary.score_0_100;$(`${key}-score`).replaceChildren(document.createTextNode(String(score??'—')),node('span',key==='bonus'?' / 15':' / 100'));$(`${key}-count`).textContent=report.summary.scored_cases+'/'+report.summary.total_cases+' case đã chấm'+(key==='bonus'?' · Điểm bộ bonus: '+report.summary.score_0_100+'/100':'')}$('report').value='after';await chooseReport('H1')}catch(error){showError(error)}})();
+</script>
+</body>
+</html>

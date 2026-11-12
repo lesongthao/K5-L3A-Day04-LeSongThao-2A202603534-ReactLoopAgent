@@ -49,6 +49,8 @@ Trong [agent.py](agent.py):
 
 Kiểm tra cuối: `python -X utf8 -m unittest discover -s tests -v` đạt **50/50**; `python -X utf8 -m unittest bonus.test_agent -v` đạt **3/3**. Các kiểm tra bổ sung trong [tests/test_evidence.py](tests/test_evidence.py) bao phủ đọc liên kết ở lượt sau, status bắt buộc, cảnh báo cắt dữ liệu, pagination, retry có giới hạn, offset sai kiểu, phạm vi điều tra và snapshot từng provider.
 
+Giao diện demo: chạy `python -X utf8 demo_ui.py --open`, xem tại `http://127.0.0.1:8765`. Giao diện đọc nguyên các báo cáo đã lưu, cho chọn trước/sau/bonus, phát lại từng sự kiện và mở JSON gốc; không gọi API, không thay code agent hay kết quả eval. Đã kiểm tra HTTP cho trang chính, danh sách báo cáo, H1 sau cải tiến, H7 trước cải tiến, B6 bonus và các đường dẫn/tham số không hợp lệ. Kiểm tra hiển thị Edge tự động bị hệ thống chặn, chưa xác nhận trực quan bằng trình duyệt.
+
 Không sửa fixtures, bộ case, scenarios, grading hoặc rubric. Dùng [run_evals_slow.py](run_evals_slow.py) để giãn cách chung agent/judge ít nhất 6 giây, thử lại tối đa hai lần khi HTTP 500/502/503/504 hoặc timeout thật; không tự thử lại HTTP 429 hết quota. Helper vẫn gọi runner và bộ chấm gốc. [resume_evals.py](resume_evals.py) chỉ tiếp tục case unscored, giữ nguyên case đã có điểm, kiểm tra cấu hình/dataset và hash nguồn khi tiếp tục.
 
 Lịch sử gỡ lỗi được giữ nguyên:
