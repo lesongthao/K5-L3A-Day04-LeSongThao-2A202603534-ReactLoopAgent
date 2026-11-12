@@ -1,0 +1,584 @@
+{
+  "summary": {
+    "total_cases": 1,
+    "scored_cases": 1,
+    "unscored_cases": 0,
+    "score_0_100": 100.0,
+    "partial_mean_0_100": null,
+    "bonus_points_0_15": null
+  },
+  "config": {
+    "provider": "gemini",
+    "model": "gemini-3.1-flash-lite",
+    "judge_provider": "gemini",
+    "judge_model": "gemini-3.1-flash-lite",
+    "max_steps": 16,
+    "dataset": "bonus"
+  },
+  "cases": [
+    {
+      "id": "B2",
+      "question": "Tra timeline Vercel incident sps6n39gm4sg: thông báo nào nói các build GitHub-connected vẫn lỗi do upstream? Theo dữ liệu bạn đọc, có thể xác nhận sự cố đó đang xảy ra không? Dẫn nguồn.",
+      "expected": "Incident resolved. Phải xem nhiều trang timeline: update offset 3 ngày 2026-10-12 16:10 UTC nói GitHub-connected builds vẫn lỗi do upstream GitHub và dẫn GitHub status; đây là incident lịch sử không khẳng định đang diễn ra; cite Vercel.",
+      "scenario": "normal",
+      "provider": "gemini",
+      "model": "gemini-3.1-flash-lite",
+      "judge_provider": "gemini",
+      "judge_model": "gemini-3.1-flash-lite",
+      "result": {
+        "status": "completed",
+        "answer": "Sau khi hoàn tất truy xuất toàn bộ dữ liệu (13/13 cập nhật) của incident GitHub `93njd414rpbx`, tôi xin tổng kết kết quả như sau:\n\n### 1. Thông báo lỗi do Upstream\nĐúng như bạn đã lưu ý, Vercel incident `sps6n39gm4sg` đã xác nhận tại cập nhật lúc **16:10:48 UTC ngày 2026-10-12** rằng các dự án kết nối GitHub bị lỗi/chậm trễ là do sự cố upstream tại GitHub (`https://www.githubstatus.com/incidents/93njd414rpbx`).\n\n### 2. Xác nhận tình trạng hiện tại\nSự cố này **đã kết thúc hoàn toàn**.\n*   **GitHub:** Incident đã được giải quyết vào lúc **20:16 UTC ngày 2026-10-12** sau khi đội ngũ kỹ thuật khắc phục đường ống chuyển phát thông báo (notifications delivery pipeline) và xóa bỏ các truy vấn tốn kém gây quá tải cơ sở dữ liệu.\n*   **Vercel:** Incident đã được giải quyết vào lúc **20:11 UTC ngày 2026-10-12** sau khi xử lý xong backlog của các sự kiện triển khai.\n\n### 3. Bằng chứng và Nguồn\n*   **Timeline GitHub:** Từ 12:21 UTC (bắt đầu điều tra) đến 20:16 UTC (giải quyết triệt để). Dữ liệu thu thập được từ trang [https://stspg.io/flldq0dn2wdz](https://stspg.io/flldq0dn2wdz) (tổng 13/13 cập nhật) xác nhận sự cố này đã chấm dứt.\n*   **Timeline Vercel:** Từ 13:35 UTC đến 20:11 UTC ngày 12/10. Dữ liệu thu thập từ [https://stspg.io/cfrfjg8fqxfr](https://stspg.io/cfrfjg8fqxfr) (tổng 7/7 cập nhật) xác nhận hệ thống đã ổn định.\n\n### Giới hạn thông tin\nDữ liệu đã được đọc đầy đủ (13/13 cho GitHub và 7/7 cho Vercel). Không có bằng chứng nào cho thấy sự cố vẫn đang xảy ra hoặc có sự cố mới liên quan đến các dịch vụ này tính đến thời điểm tra cứu hiện tại.",
+        "trace": [
+          {
+            "event": "model",
+            "step": 1,
+            "finish": "tool_calls"
+          },
+          {
+            "event": "tool",
+            "step": 1,
+            "name": "get_incident_details",
+            "arguments": {
+              "provider": "vercel",
+              "limit": 3,
+              "incident_id": "sps6n39gm4sg"
+            },
+            "result": {
+              "ok": true,
+              "provider": "vercel",
+              "id": "sps6n39gm4sg",
+              "name": "Increased build and deployment failures",
+              "status": "resolved",
+              "created_at": "2026-10-12T13:35:07.398Z",
+              "updated_at": "2026-10-12T20:11:12.802Z",
+              "captured_at": "2026-11-10T14:45:50.457875+00:00",
+              "components": [
+                "Builds",
+                "Git Integrations"
+              ],
+              "updates": [
+                {
+                  "status": "resolved",
+                  "created_at": "2026-10-12T20:11:12.778Z",
+                  "body": "This incident has been resolved.",
+                  "truncated": false
+                },
+                {
+                  "status": "monitoring",
+                  "created_at": "2026-10-12T19:56:56.002Z",
+                  "body": "The backlog of deployment events has been processed. We will continue to monitor and provide additional updates as they become available.",
+                  "truncated": false
+                },
+                {
+                  "status": "identified",
+                  "created_at": "2026-10-12T18:33:36.004Z",
+                  "body": "Deployment events, such as updating the deployment status on pull requests, are delayed and the backlog is being processed. We will provide additional updates as they become available.",
+                  "truncated": false
+                }
+              ],
+              "offset": 0,
+              "total_updates": 7,
+              "next_offset": 3,
+              "url": "https://stspg.io/cfrfjg8fqxfr"
+            }
+          },
+          {
+            "event": "model",
+            "step": 2,
+            "finish": "tool_calls"
+          },
+          {
+            "event": "tool",
+            "step": 2,
+            "name": "get_incident_details",
+            "arguments": {
+              "limit": 3,
+              "offset": 3,
+              "provider": "vercel",
+              "incident_id": "sps6n39gm4sg"
+            },
+            "result": {
+              "ok": true,
+              "provider": "vercel",
+              "id": "sps6n39gm4sg",
+              "name": "Increased build and deployment failures",
+              "status": "resolved",
+              "created_at": "2026-10-12T13:35:07.398Z",
+              "updated_at": "2026-10-12T20:11:12.802Z",
+              "captured_at": "2026-11-10T14:45:50.457875+00:00",
+              "components": [
+                "Builds",
+                "Git Integrations"
+              ],
+              "updates": [
+                {
+                  "status": "identified",
+                  "created_at": "2026-10-12T16:10:48.923Z",
+                  "body": "We are continuing to work on a fix. Due to an upstream incident at GitHub (https://www.githubstatus.com/incidents/93njd414rpbx), some builds and deployments for GitHub-connected projects are still failing. We will provide additional updates as they become available.",
+                  "truncated": false
+                },
+                {
+                  "status": "identified",
+                  "created_at": "2026-10-12T14:57:41.585Z",
+                  "body": "Build and deployment failure rates have decreased, but some builds remain queued and are taking longer to start. We are continuing to work on a fix. We will provide additional updates as they become available.",
+                  "truncated": false
+                },
+                {
+                  "status": "identified",
+                  "created_at": "2026-10-12T14:08:54.967Z",
+                  "body": "We have identified the issue and are working on a fix. We will provide additional updates as they become available.",
+                  "truncated": false
+                }
+              ],
+              "offset": 3,
+              "total_updates": 7,
+              "next_offset": 6,
+              "url": "https://stspg.io/cfrfjg8fqxfr"
+            }
+          },
+          {
+            "event": "model",
+            "step": 3,
+            "finish": "stop"
+          },
+          {
+            "event": "validation_missing_evidence",
+            "step": 3,
+            "missing": [
+              "Doc incident lien quan tu link da quan sat: {\"provider\": \"github\", \"incident_id\": \"93njd414rpbx\"}",
+              "Con trang timeline can doc: {\"provider\": \"vercel\", \"incident_id\": \"sps6n39gm4sg\", \"offset\": 6}"
+            ]
+          },
+          {
+            "event": "model",
+            "step": 4,
+            "finish": "tool_calls"
+          },
+          {
+            "event": "tool",
+            "step": 4,
+            "name": "get_incident_details",
+            "arguments": {
+              "provider": "github",
+              "incident_id": "93njd414rpbx"
+            },
+            "result": {
+              "ok": true,
+              "provider": "github",
+              "id": "93njd414rpbx",
+              "name": "Incident with Actions, Pull Requests and Issues",
+              "status": "resolved",
+              "created_at": "2026-10-12T12:21:47.972Z",
+              "updated_at": "2026-10-15T17:28:05.702Z",
+              "captured_at": "2026-11-09T03:50:47.065020+00:00",
+              "components": [
+                "Issues",
+                "Pull Requests",
+                "Actions"
+              ],
+              "updates": [
+                {
+                  "status": "resolved",
+                  "created_at": "2026-10-12T20:16:07.447Z",
+                  "body": "On October 12th 2026 11:51 UTC GitHub experienced elevated 500 responses across several application pages. This caused failures on Issues and Pull Requests as well as Projects and Actions. Customers also experienced delayed notifications in their web inbox and via email. <br /><br />The immediate impact to Issues, Pull Requests, Projects, and Actions was mitigated by 12:41 UTC on October 12th. Notifications deliveries to the web inbox and via email were recovering at 15:27 UTC and fully mitigated by 20:16 UTC. <br /><br />The incident was triggered through a latent condition in our notifications delivery pipeline that put a high volume of an expensive query on our sharded database replicas. This reduced available database capacity to serve requests for Issues, Pull Requests, Projects, and Actions.<br /><br />We have fixed the notifications pipeline’s code path that issued the expensive query. We are also improving resilience of the database layer to reduce the likelihood and impact of similar incidents.",
+                  "truncated": false
+                },
+                {
+                  "status": "investigating",
+                  "created_at": "2026-10-12T19:28:42.836Z",
+                  "body": "Web and email notifications will be delayed for 1 more hour as we are close to completing the backlog of notifications.",
+                  "truncated": false
+                }
+              ],
+              "offset": 0,
+              "total_updates": 13,
+              "next_offset": 2,
+              "url": "https://stspg.io/flldq0dn2wdz"
+            }
+          },
+          {
+            "event": "model",
+            "step": 5,
+            "finish": "tool_calls"
+          },
+          {
+            "event": "tool",
+            "step": 5,
+            "name": "get_incident_details",
+            "arguments": {
+              "limit": 3,
+              "incident_id": "sps6n39gm4sg",
+              "offset": 6,
+              "provider": "vercel"
+            },
+            "result": {
+              "ok": true,
+              "provider": "vercel",
+              "id": "sps6n39gm4sg",
+              "name": "Increased build and deployment failures",
+              "status": "resolved",
+              "created_at": "2026-10-12T13:35:07.398Z",
+              "updated_at": "2026-10-12T20:11:12.802Z",
+              "captured_at": "2026-11-10T14:45:50.457875+00:00",
+              "components": [
+                "Builds",
+                "Git Integrations"
+              ],
+              "updates": [
+                {
+                  "status": "investigating",
+                  "created_at": "2026-10-12T13:35:07.540Z",
+                  "body": "We've identified an issue where some customers may experience build failures or deployments that fail to start. We are investigating this issue. We will provide additional updates as they become available.",
+                  "truncated": false
+                }
+              ],
+              "offset": 6,
+              "total_updates": 7,
+              "next_offset": null,
+              "url": "https://stspg.io/cfrfjg8fqxfr"
+            }
+          },
+          {
+            "event": "model",
+            "step": 6,
+            "finish": "stop"
+          },
+          {
+            "event": "validation_missing_evidence",
+            "step": 6,
+            "missing": [
+              "Con trang timeline can doc: {\"provider\": \"github\", \"incident_id\": \"93njd414rpbx\", \"offset\": 2}"
+            ]
+          },
+          {
+            "event": "model",
+            "step": 7,
+            "finish": "tool_calls"
+          },
+          {
+            "event": "tool",
+            "step": 7,
+            "name": "get_incident_details",
+            "arguments": {
+              "offset": 2,
+              "provider": "github",
+              "limit": 3,
+              "incident_id": "93njd414rpbx"
+            },
+            "result": {
+              "ok": true,
+              "provider": "github",
+              "id": "93njd414rpbx",
+              "name": "Incident with Actions, Pull Requests and Issues",
+              "status": "resolved",
+              "created_at": "2026-10-12T12:21:47.972Z",
+              "updated_at": "2026-10-15T17:28:05.702Z",
+              "captured_at": "2026-11-09T03:50:47.065020+00:00",
+              "components": [
+                "Issues",
+                "Pull Requests",
+                "Actions"
+              ],
+              "updates": [
+                {
+                  "status": "investigating",
+                  "created_at": "2026-10-12T17:34:24.812Z",
+                  "body": "Web and email notifications continue to be delayed as we work through a backlog of notifications.",
+                  "truncated": false
+                },
+                {
+                  "status": "investigating",
+                  "created_at": "2026-10-12T15:50:39.420Z",
+                  "body": "Notifications have resumed but will continue to be delayed as we work through a backlog.",
+                  "truncated": false
+                },
+                {
+                  "status": "investigating",
+                  "created_at": "2026-10-12T15:19:00.679Z",
+                  "body": "We have successfully applied a mitigation for notifications, and notifications have resumed but will continue to be delayed as we work through a backlog.",
+                  "truncated": false
+                }
+              ],
+              "offset": 2,
+              "total_updates": 13,
+              "next_offset": 5,
+              "url": "https://stspg.io/flldq0dn2wdz"
+            }
+          },
+          {
+            "event": "model",
+            "step": 8,
+            "finish": "stop"
+          },
+          {
+            "event": "validation_missing_evidence",
+            "step": 8,
+            "missing": [
+              "Con trang timeline can doc: {\"provider\": \"github\", \"incident_id\": \"93njd414rpbx\", \"offset\": 5}"
+            ]
+          },
+          {
+            "event": "model",
+            "step": 9,
+            "finish": "tool_calls"
+          },
+          {
+            "event": "tool",
+            "step": 9,
+            "name": "get_incident_details",
+            "arguments": {
+              "incident_id": "93njd414rpbx",
+              "limit": 3,
+              "provider": "github",
+              "offset": 5
+            },
+            "result": {
+              "ok": true,
+              "provider": "github",
+              "id": "93njd414rpbx",
+              "name": "Incident with Actions, Pull Requests and Issues",
+              "status": "resolved",
+              "created_at": "2026-10-12T12:21:47.972Z",
+              "updated_at": "2026-10-15T17:28:05.702Z",
+              "captured_at": "2026-11-09T03:50:47.065020+00:00",
+              "components": [
+                "Issues",
+                "Pull Requests",
+                "Actions"
+              ],
+              "updates": [
+                {
+                  "status": "investigating",
+                  "created_at": "2026-10-12T14:37:49.319Z",
+                  "body": "We have mitigated the issues with Actions, issues, and projects, and have a mitigation in progress to address the delay with notifications.",
+                  "truncated": false
+                },
+                {
+                  "status": "investigating",
+                  "created_at": "2026-10-12T14:36:09.442Z",
+                  "body": "The degradation affecting Actions has been mitigated. We are monitoring to ensure stability.",
+                  "truncated": false
+                },
+                {
+                  "status": "investigating",
+                  "created_at": "2026-10-12T14:35:49.253Z",
+                  "body": "The degradation affecting Issues has been mitigated. We are monitoring to ensure stability.",
+                  "truncated": false
+                }
+              ],
+              "offset": 5,
+              "total_updates": 13,
+              "next_offset": 8,
+              "url": "https://stspg.io/flldq0dn2wdz"
+            }
+          },
+          {
+            "event": "model",
+            "step": 10,
+            "finish": "tool_calls"
+          },
+          {
+            "event": "tool",
+            "step": 10,
+            "name": "get_incident_details",
+            "arguments": {
+              "limit": 3,
+              "provider": "github",
+              "incident_id": "93njd414rpbx",
+              "offset": 8
+            },
+            "result": {
+              "ok": true,
+              "provider": "github",
+              "id": "93njd414rpbx",
+              "name": "Incident with Actions, Pull Requests and Issues",
+              "status": "resolved",
+              "created_at": "2026-10-12T12:21:47.972Z",
+              "updated_at": "2026-10-15T17:28:05.702Z",
+              "captured_at": "2026-11-09T03:50:47.065020+00:00",
+              "components": [
+                "Issues",
+                "Pull Requests",
+                "Actions"
+              ],
+              "updates": [
+                {
+                  "status": "investigating",
+                  "created_at": "2026-10-12T13:38:44.570Z",
+                  "body": "Our initial mitigation was not fully successful, and users may still experience delays and errors with Actions, issues and projects, and notifications are delayed. We're continuing to investigate the root cause and work on additional mitigations.",
+                  "truncated": false
+                },
+                {
+                  "status": "investigating",
+                  "created_at": "2026-10-12T13:02:17.366Z",
+                  "body": "Pull Requests is operating normally.",
+                  "truncated": false
+                },
+                {
+                  "status": "investigating",
+                  "created_at": "2026-10-12T12:57:44.849Z",
+                  "body": "We have a mitigation in progress and are monitoring for recovery. Users may also experience delayed web notifications as we mitigate.",
+                  "truncated": false
+                }
+              ],
+              "offset": 8,
+              "total_updates": 13,
+              "next_offset": 11,
+              "url": "https://stspg.io/flldq0dn2wdz"
+            }
+          },
+          {
+            "event": "model",
+            "step": 11,
+            "finish": "tool_calls"
+          },
+          {
+            "event": "tool",
+            "step": 11,
+            "name": "get_incident_details",
+            "arguments": {
+              "limit": 2,
+              "offset": 11,
+              "incident_id": "93njd414rpbx",
+              "provider": "github"
+            },
+            "result": {
+              "ok": true,
+              "provider": "github",
+              "id": "93njd414rpbx",
+              "name": "Incident with Actions, Pull Requests and Issues",
+              "status": "resolved",
+              "created_at": "2026-10-12T12:21:47.972Z",
+              "updated_at": "2026-10-15T17:28:05.702Z",
+              "captured_at": "2026-11-09T03:50:47.065020+00:00",
+              "components": [
+                "Issues",
+                "Pull Requests",
+                "Actions"
+              ],
+              "updates": [
+                {
+                  "status": "investigating",
+                  "created_at": "2026-10-12T12:33:21.895Z",
+                  "body": "Users may experience issues loading the Actions tab UI, interacting with the Checks API, queueing new Actions runs, creating and updating issues, and requesting PR reviews, including via REST and GraphQL APIs.",
+                  "truncated": false
+                },
+                {
+                  "status": "investigating",
+                  "created_at": "2026-10-12T12:21:48.115Z",
+                  "body": "We are investigating reports of degraded performance for Actions, Issues and Pull Requests",
+                  "truncated": false
+                }
+              ],
+              "offset": 11,
+              "total_updates": 13,
+              "next_offset": null,
+              "url": "https://stspg.io/flldq0dn2wdz"
+            }
+          },
+          {
+            "event": "model",
+            "step": 12,
+            "finish": "stop"
+          }
+        ],
+        "usage": [
+          {
+            "completion_tokens": 38,
+            "prompt_tokens": 1343,
+            "total_tokens": 1381
+          },
+          {
+            "completion_tokens": 42,
+            "prompt_tokens": 1794,
+            "total_tokens": 1836
+          },
+          {
+            "completion_tokens": 353,
+            "prompt_tokens": 2311,
+            "total_tokens": 2664
+          },
+          {
+            "completion_tokens": 34,
+            "prompt_tokens": 2780,
+            "total_tokens": 2814
+          },
+          {
+            "completion_tokens": 42,
+            "prompt_tokens": 3367,
+            "total_tokens": 3409
+          },
+          {
+            "completion_tokens": 598,
+            "prompt_tokens": 3705,
+            "total_tokens": 4303
+          },
+          {
+            "completion_tokens": 42,
+            "prompt_tokens": 4384,
+            "total_tokens": 4426
+          },
+          {
+            "completion_tokens": 485,
+            "prompt_tokens": 4846,
+            "prompt_tokens_details": {
+              "cached_tokens": 2003
+            },
+            "total_tokens": 5331
+          },
+          {
+            "completion_tokens": 42,
+            "prompt_tokens": 5412,
+            "total_tokens": 5454
+          },
+          {
+            "completion_tokens": 42,
+            "prompt_tokens": 5871,
+            "prompt_tokens_details": {
+              "cached_tokens": 2006
+            },
+            "total_tokens": 5913
+          },
+          {
+            "completion_tokens": 43,
+            "prompt_tokens": 6348,
+            "prompt_tokens_details": {
+              "cached_tokens": 4012
+            },
+            "total_tokens": 6391
+          },
+          {
+            "completion_tokens": 564,
+            "prompt_tokens": 6759,
+            "total_tokens": 7323
+          }
+        ]
+      },
+      "grade": {
+        "score": 100,
+        "raw_judge_score": 100,
+        "dimensions": {
+          "factuality": 40,
+          "completeness": 25,
+          "evidence": 20,
+          "boundaries": 15
+        },
+        "status": "scored",
+        "reason": "Agent đã trả lời chính xác dựa trên dữ liệu thu thập được từ timeline của cả Vercel và GitHub, xác định rõ thời gian sự cố, nguyên nhân (upstream), và trạng thái đã resolved.",
+        "improvement": "Không cần cải thiện.",
+        "mechanical": {
+          "violations": [],
+          "score_cap": 100,
+          "tool_calls": 8,
+          "tool_steps": 8
+        },
+        "judge_usage": {
+          "completion_tokens": 86,
+          "prompt_tokens": 5402,
+          "total_tokens": 5488
+        },
+        "judge_trace_truncated": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "description": "Source hashes before final Gemini evaluations; report scores are not modified.",
+  "sha256": {
+    "agent.py": "97270c2260a34e221a7a5bd339b0c785b0b2fc1dc702f5766ff6909f0ac33f22",
+    "bonus/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "bonus/cases.json": "393b97bf9ebb975ce1ae3505cc25eb37fc2f5607aa443803276d039b87e64a22",
+    "bonus/fixtures/digitalocean.json": "aa986964026fa859b5f59d7300dacf2cd4b08985760bb14f66d6c0dcc89213c4",
+    "bonus/fixtures/npm.json": "60b5baf13aca675d70037f15f350c09fccc462fc2483a90d3f6287e068246154",
+    "bonus/fixtures/vercel.json": "218c855f022e2001d2115fa490605672df83ced02a34bf5c6c2bd9aa402e591b",
+    "bonus/test_agent.py": "87209458415d7b8c86d3fb301b8864c8b02572fc4cbfc8c0a817bdb34dfd0a36",
+    "bonus/tools.py": "54adc32a66fc84359b7b40ab3aa7e951f762f9e9a0cac3bb29759f8b334d5413",
+    "evals/cases.json": "bca3ea31cb42dae5a952a7522bf87242b25117e565d1a5c3c636c18635abf50b",
+    "evals/grading.py": "e64f759f933830800788f6d315768a1152214faefb947585a1ff9148e7761f25",
+    "evals/run_evals.py": "cd01f569f9fa3e522fa90f904eafe6aa2793f15973736de702d9167fdd945bf4",
+    "evals/scenarios.py": "193c39f8f82cdaa3c4f7b68715ddaf94cdae1f4f760bcc893ccaa42e84436a1f",
+    "fixtures/cloudflare.json": "04eb4851cae0b59cda64313fb82b94c5de7ab8e3a47016844b97762c18bbd57e",
+    "fixtures/github.json": "ef189b6b8376d42b50b5676e08264f5745a69141b19cd0ed3f86a1b74217f11c",
+    "providers.py": "c95c92939741a7b4a0d4069b607bc40f3c61a8ba5185c00e1f5ca7b4be932e98",
+    "run_evals_slow.py": "4551dacc7b5e4ed52a39c66d5fc654ea715c6a3f6adfd6c1e7cacda5f77b86f2",
+    "status_tools.py": "e38269099ebdab59265a0eeda952287ea056e6834a3a4ad892dc1dec1e0b3a29"
+  }
+}
