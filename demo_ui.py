@@ -1,13 +1,19 @@
-"""Local demo of saved, real evaluation traces. No API calls or API keys.
+"""Local question/answer demo and replay of saved evaluation traces.
 
 Run: python -X utf8 demo_ui.py --open
 """
 import argparse
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import json
+import os
 from pathlib import Path
+from threading import Lock
 from urllib.parse import parse_qs, urlparse
 import webbrowser
+from agent import run_agent
+from bonus.tools import BonusTools
+from providers import CONFIG, Provider
+from run_evals_slow import CallPacer, paced_complete
 
 ROOT = Path(__file__).resolve().parent
 REPORTS = {
@@ -15,6 +21,35 @@ REPORTS = {
     'before': ('Trước cải tiến', 'eval_before.json'),
     'bonus': ('Bonus', 'eval_bonus.json'),
 }
+RUN_LOCK = Lock()
+PACER = CallPacer()
+
+
+class InteractiveProvider(Provider):
+    def __init__(self, key, emit):
+        self.name, self.model = 'gemini', 'gemini-3.1-flash-lite'
+        self.url, self.key = CONFIG['gemini'][1], key
+        self.emit = emit
+        self.step = 0
+
+    def complete(self, messages, schemas):
+        self.step += 1
+        self.emit({'event': 'thinking', 'step': self.step, 'message': 'AI đang xử lý câu hỏi và bằng chứng…'})
+        response = paced_complete(Provider.complete, PACER)(self, messages, schemas)
+        self.emit({'event': 'model', 'step': self.step, 'finish': response['finish']})
+        return response
+
+
+class InteractiveTools(BonusTools):
+    def __init__(self, mode, emit, provider):
+        super().__init__(mode=mode)
+        self.emit, self.provider = emit, provider
+
+    def execute(self, name, arguments):
+        self.emit({'event': 'tool_started', 'step': self.provider.step, 'name': name, 'arguments': arguments})
+        result = super().execute(name, arguments)
+        self.emit({'event': 'tool', 'step': self.provider.step, 'name': name, 'arguments': arguments, 'result': result})
+        return result
 
 
 def read_report(key):
@@ -22,6 +57,54 @@ def read_report(key):
 
 
 class DemoHandler(BaseHTTPRequestHandler):
+    def do_POST(self):
+        if self.path != '/api/ask':
+            self.send_json(404, {'error': 'Không tìm thấy đường dẫn.'})
+            return
+        origin = self.headers.get('Origin')
+        if origin and origin not in (f'http://127.0.0.1:{self.server.server_port}', f'http://localhost:{self.server.server_port}'):
+            self.send_json(403, {'error': 'Chỉ chấp nhận giao diện cục bộ.'})
+            return
+        try:
+            size = int(self.headers.get('Content-Length', '0'))
+            if not 0 < size <= 32000:
+                raise ValueError()
+            body = json.loads(self.rfile.read(size))
+            question = body.get('question', '').strip()
+            mode = body.get('mode', 'snapshot')
+            key = (body.get('key') or os.getenv('GEMINI_API_KEY') or '').strip()
+            if not question or len(question) > 6000 or mode not in ('snapshot', 'live') or len(key) > 512:
+                raise ValueError()
+        except (ValueError, TypeError, AttributeError):
+            self.send_json(400, {'error': 'Nhập câu hỏi từ 1–6000 ký tự và chọn nguồn dữ liệu hợp lệ.'})
+            return
+        if not key:
+            self.send_json(400, {'error': 'Cần Gemini API key: nhập vào ô mật khẩu hoặc khởi động server từ terminal đã đặt GEMINI_API_KEY.'})
+            return
+        if not RUN_LOCK.acquire(blocking=False):
+            self.send_json(409, {'error': 'Agent đang trả lời câu hỏi khác. Đợi lượt hiện tại kết thúc.'})
+            return
+        try:
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/x-ndjson; charset=utf-8')
+            self.send_header('Cache-Control', 'no-store')
+            self.send_header('Connection', 'close')
+            self.end_headers()
+            self.close_connection = True
+
+            def emit(event):
+                self.wfile.write((json.dumps(event, ensure_ascii=False) + '\n').encode('utf-8'))
+                self.wfile.flush()
+
+            provider = InteractiveProvider(key, emit)
+            tools = InteractiveTools(mode, emit, provider)
+            result = run_agent(question, provider, tools, max_steps=12)
+            emit({'event': 'done', 'result': result})
+        except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+            pass
+        finally:
+            RUN_LOCK.release()
+
     def send_data(self, status, content, content_type='application/json; charset=utf-8'):
         self.send_response(status)
         self.send_header('Content-Type', content_type)
@@ -79,7 +162,7 @@ def main():
     except OSError as error:
         parser.exit(1, f'Không mở được cổng {args.port}: {error}. Thử --port 8766.\n')
     url = f'http://127.0.0.1:{server.server_port}'
-    print(f'Demo: {url}\nĐọc kết quả đã lưu, không gọi API. Nhấn Ctrl+C để dừng.', flush=True)
+    print(f'Demo: {url}\nHỏi đáp gọi Gemini thật; phát lại đọc file eval. Nhấn Ctrl+C để dừng.', flush=True)
     if args.open:
         webbrowser.open(url)
     try:

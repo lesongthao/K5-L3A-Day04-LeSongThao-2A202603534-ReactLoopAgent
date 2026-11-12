@@ -11,9 +11,11 @@ Tài liệu đề bài gốc được giữ bên dưới.
 
 ## Giao diện demo cục bộ
 
-Chạy `python -X utf8 demo_ui.py --open`, hoặc mở `http://127.0.0.1:8765` sau khi khởi động server. Không cần cài thư viện, nhập API key hoặc gọi API để demo.
+Chạy `python -X utf8 demo_ui.py --open`, hoặc mở `http://127.0.0.1:8765` sau khi khởi động server. Không cần cài thư viện.
 
-Chọn H1 để trình chiếu điều tra nhiều bước; chọn H7 rồi chuyển giữa “Trước cải tiến” và “Sau cải tiến” để minh họa xử lý timeout. Có thể chọn cả 10 case bonus. Nút “Phát lại” trình chiếu các sự kiện trong file eval thật, không chạy một lượt AI mới. Nhấn Ctrl+C trong terminal để dừng server; dùng `--port 8766` nếu cổng mặc định đang bận.
+Phần **Hỏi agent trực tiếp** nhận câu hỏi và thực sự gọi Gemini `gemini-3.1-flash-lite`, chạy agent với tối đa 12 lượt gọi, hiển thị tiến trình và kết quả công cụ. Đặt `GEMINI_API_KEY` trước khi khởi động server hoặc nhập key vào ô mật khẩu trên giao diện. Key chỉ ở bộ nhớ phiên demo, không ghi file. Chọn snapshot để dùng dữ liệu lab hoặc chọn status hiện tại để gọi các status API qua Internet. Hỏi đáp tiêu thụ hạn mức Gemini thật; dòng “AI đang xử lý” là trạng thái tiến trình, không phải nội dung suy luận nội bộ.
+
+Phần **phát lại báo cáo** bên dưới không cần key: chọn H1 để trình chiếu điều tra nhiều bước; chọn H7 rồi chuyển giữa “Trước cải tiến” và “Sau cải tiến” để minh họa xử lý timeout. Có thể chọn cả 10 case bonus. Nút “Phát lại” trình chiếu các sự kiện trong file eval thật, không chạy một lượt AI mới. Nhấn Ctrl+C trong terminal để dừng server; dùng `--port 8766` nếu cổng mặc định đang bận.
 
 # Lab: Xây dựng Status Investigation Agent
 
