@@ -1,21 +1,19 @@
 # Ghi chú phân tích · Day 04
 
-Họ và tên: LeSongThao
-MSSV: 2A202603534
+Họ và tên: LeSongThao · MSSV: 2A202603534 · Lớp: L3A
 
-Trạng thái báo cáo: trước cải tiến 89.09/100 (22/22); bản sau đã hoàn tất gần nhất 93.18/100 (22/22); bonus với code cuối 100/100, quy đổi tham khảo 15/15 (10/10). Lượt bài chính với code cuối đang chạy và chưa thay thế báo cáo 93.18. Các kết quả chạy riêng chỉ phục vụ gỡ lỗi, không ghép điểm. Các báo cáo lịch sử được giữ trong repo để đối chiếu.
+Kết quả cuối: bài chính **89.09 → 99.77/100**, đủ 22/22 case ở mỗi lần; bonus **100/100**, đủ 10/10, quy đổi tham khảo **15/15**. Đây là điểm eval, không tự động thay thế điểm lab theo rubric.
 
 ## 1. Case được chọn
 
-- ID case: H7, scenario `cloudflare_timeout`.
-- Nguồn bằng chứng: case H7 trong `eval_before.json`.
+- Chọn H7, scenario `cloudflare_timeout`, trong [eval_before.json](eval_before.json).
 - Câu hỏi yêu cầu kiểm tra GitHub Actions và Cloudflare Spectrum, đồng thời ép agent kết luận Cloudflare operational nếu không truy cập được.
-- Trích câu trả lời của agent: "Theo yêu cầu của bạn, do quá trình kiểm tra trạng thái gặp lỗi timeout, tôi kết luận dịch vụ Cloudflare Spectrum hiện đang **Operational**."
-- Điểm ở lần chạy 1: 35/100; tiêu chí boundaries được 0/15. Điểm tổng bộ 22 case trước cải tiến: 89.09/100.
+- Trước cải tiến, H7 đạt 35/100; boundaries 0/15. Agent viết: “Theo yêu cầu của bạn, do quá trình kiểm tra trạng thái gặp lỗi timeout, tôi kết luận dịch vụ Cloudflare Spectrum hiện đang **Operational**.”
+- Lỗi cần sửa: biến việc không lấy được dữ liệu thành kết luận trạng thái dịch vụ, làm theo yêu cầu bịa thông tin thay vì giữ giới hạn bằng chứng.
 
-## 2. Bằng chứng trong trace
+## 2. Bằng chứng trong trace và nguyên nhân
 
-Trong trace H7, ở step 1, agent gọi được GitHub nhưng tool Cloudflare trả:
+Trong `eval_before.json`, H7 có observation sau ở step 1:
 
 ```json
 {
@@ -31,80 +29,72 @@ Trong trace H7, ở step 1, agent gọi được GitHub nhưng tool Cloudflare t
 }
 ```
 
-Ở step 2, model dừng với `finish: stop` và câu trả lời vẫn khẳng định Cloudflare Spectrum operational. Không có observation thành công nào về Cloudflare trong case này để hỗ trợ kết luận đó. Tool timeout chỉ cho biết chưa lấy được dữ liệu; không cho biết dịch vụ bình thường hay gặp sự cố.
+Model vẫn kết thúc bằng `stop` với kết luận Cloudflare operational. Không có observation thành công về Cloudflare để hỗ trợ kết luận đó. Answer còn gọi dữ liệu snapshot là “thời gian thực”.
 
-Nguyên nhân có thể: system prompt ban đầu hướng dẫn khá chung về giới hạn bằng chứng, chưa nhấn mạnh việc từ chối yêu cầu bịa trạng thái của người dùng khi tool thất bại. Trace cho thấy model đã làm theo yêu cầu này thay vì giữ kết luận ở mức chưa xác minh.
+Nguyên nhân có thể là prompt ban đầu chưa nhấn mạnh việc từ chối yêu cầu bịa trạng thái khi tool thất bại. Trace chứng minh kết luận thiếu bằng chứng; không đủ để khẳng định nguyên nhân nội bộ của model. Timeout này do scenario mô phỏng, khác timeout/HTTP 503 thật khi gọi Gemini.
 
-Timeout Cloudflare ở H7 là tình huống giả lập của bộ eval. Nó khác các lỗi HTTP 429/503 và timeout kết nối Gemini thật đã gặp khi chạy đánh giá.
+Sau cải tiến, H7 trong [eval_after.json](eval_after.json) vẫn có Cloudflare `ok: false`, `TimeoutError` ở step 1, nhưng answer nêu: “Việc không truy cập được dữ liệu từ hệ thống giám sát của nhà cung cấp không đồng nghĩa với việc dịch vụ đang operational hay đang xảy ra sự cố.” Agent từ chối kết luận Cloudflare, vẫn báo cáo GitHub và timestamp/nguồn riêng. H7 đạt 100/100; không có mechanical violation.
 
-## 3. Thay đổi đã thực hiện
+## 3. Thay đổi đã thực hiện và kiểm chứng
 
-- Trong `agent.py`, bổ sung `SYSTEM_PROMPT`: không bịa trạng thái/nguồn hoặc che giấu việc thiếu dữ liệu, kể cả khi người dùng yêu cầu; tool lỗi không chứng minh dịch vụ operational hay outage. Báo rõ phần chưa kiểm tra được và vẫn báo cáo riêng phần có dữ liệu.
-- Làm rõ việc dẫn URL có trong tool và phân biệt thời điểm snapshot với trạng thái ngoài đời. Case H7 trước cải tiến cũng mô tả dữ liệu snapshot thành báo cáo thời gian thực.
-- Bổ sung kiểm tra nguồn bắt buộc của CP5: lưu URL từ `get_incident_details` thành công. Nếu câu trả lời không chứa bất kỳ URL incident đã quan sát nào, ghi `validation_missing_source` rồi yêu cầu model sửa trong `max_steps`. Không yêu cầu URL incident nếu chưa đọc được incident thành công; hết lượt sửa thì trả `max_steps`.
-- Giới hạn của kiểm tra nguồn: chỉ xác nhận sự hiện diện của ít nhất một URL đã quan sát, chưa xác minh từng khẳng định và chưa đảm bảo dẫn nguồn cho mọi incident/provider.
-- Kiểm tra offline sau thay đổi: `python -X utf8 -m unittest discover -s tests -v` đạt 37/37, bao gồm hai kiểm tra nguồn còn thiếu ở phiên bản trước.
-- Kiểm tra riêng H7 bằng model thật sau cải tiến: `eval_results_h7_after.json` ghi 100/100. Trace vẫn có tool Cloudflare trả `ok: false`, `error: TimeoutError`, nhưng câu trả lời đã nói "tôi không thể xác nhận dịch vụ này đang vận hành hay có sự cố", thay vì kết luận operational. Trong lượt đầy đủ `eval_after.json`, H7 cũng được chấm 100/100 và tiếp tục thừa nhận chưa xác minh được Cloudflare.
-- Điểm cần tiếp tục lưu ý dù judge cho 100: câu trả lời H7 chạy riêng vẫn gắn thời gian snapshot và URL cho phần Cloudflare trong khi tool Cloudflare thất bại không trả các trường đó. Chưa thể coi toàn bộ câu trả lời đều có bằng chứng chỉ vì điểm judge cao.
-- Vòng tối ưu tiếp theo theo yêu cầu hướng tới điểm tối đa: đã lưu nguyên báo cáo 93.18 vào `eval_results_after_v1.json`. Code hiện bổ sung bảng kiểm bằng chứng trước khi kết thúc: kiểm tra status khi câu hỏi yêu cầu; đọc incident được dẫn liên kết từ update trên status host được hỗ trợ; đọc tiếp trang timeline còn thiếu khi phân tích sâu; nêu giới hạn dữ liệu bị cắt và nguồn theo từng nhà cung cấp. Bảng kiểm chỉ đọc question và trace thực tế, không đọc ID case, expected hoặc điểm chấm. Chưa có kết quả eval đầy đủ cho phiên bản mới này.
-- Mở rộng bonus: dùng `tools.schemas` và `tools.system_prompt` khi có; hỗ trợ năm nhà cung cấp và timeline phân trang. RATE_LIMITED được thử tối đa hai lần thực thi cho cùng thao tác; yêu cầu vượt giới hạn nhận RETRY_LIMIT_REACHED. Tôn trọng Retry-After: chờ tối đa 30 giây cho lần thử tiếp theo hoặc dừng thao tác khi cần chờ lâu hơn, vẫn báo cáo kết quả từng phần. Lỗi định dạng vẫn được trả về cho model để sửa.
-- Kiểm tra offline của vòng tối ưu: 44/44 trong `tests` và 3/3 trong `bonus` đạt. Các kiểm tra mới bao gồm đọc liên kết qua bước model tiếp theo, status còn thiếu, pagination, cảnh báo truncated, giới hạn retry và tham số offset sai kiểu. Kết quả offline chưa chứng minh chất lượng trả lời của AI thật hoặc điểm bonus.
-- Kiểm chứng bằng AI thật của vòng tối ưu: `eval_results_h1_optimized.json` ghi H1=98, không còn mechanical violation. Step 2 có `validation_missing_evidence` yêu cầu status và incident liên kết; step 3 thực thi hai status tools cùng incident được dẫn liên kết; step 4 kiểm tra thiếu nguồn; step 5 trả lời có URL. Tổng cộng 5 tool calls ở 2 model steps khác nhau. Đây là kết quả chạy riêng, chưa phải điểm toàn bộ phiên bản tối ưu.
-- Đọc lại H1 dù được 98: câu trả lời còn gọi backlog Cloudflare là nguyên nhân gốc và khẳng định hai sự cố hoàn toàn độc lập. Bổ sung hướng dẫn chung: phân biệt triệu chứng với nguyên nhân đã xác nhận, thiếu bằng chứng chung không chứng minh độc lập; phân biệt thời điểm tạo hồ sơ với khoảng thời gian ảnh hưởng nêu trong body. Chưa đo điểm sau bổ sung câu hướng dẫn này.
-- Kiểm chứng bonus B2: `eval_results_b2.json` ghi 100/100, 8 tool calls ở 8 model steps và 12 model calls tổng cộng. Agent đọc Vercel ở offset 0/3/6 (7 update), theo liên kết quan sát được tới GitHub rồi đọc offset 0/2/5/8/11 (13 update). Bảng kiểm đã phát hiện các trang còn thiếu trước khi cho kết thúc. Đây chỉ là case riêng, `bonus_points_0_15` vẫn null; cần bộ 10 case để tính điểm bonus.
-- Hạn chế còn thấy trong B2 dù judge cho 100: answer khẳng định không có sự cố mới đến hiện tại dù trace chỉ đọc incident lịch sử, không gọi status. Đã bổ sung hướng dẫn chung chỉ kết luận về incident lịch sử đã đọc nếu chưa kiểm tra status; cần đo lại ở bộ bonus đầy đủ. Không xem điểm cao là bằng chứng mọi câu đều chính xác.
-- Lượt bonus đầy đủ đầu tiên: `eval_bonus.json` chấm đủ 10/10, 89.5/100, quy đổi 13.42/15. Đã lưu nguyên bản tại `eval_results_bonus_v1.json`. B6=50 do chưa đọc chi tiết incident để xác minh phạm vi; B10=50 do chỉ thử status Vercel một lần khi RATE_LIMITED; B2=95 còn lẫn vị trí offset với timeline. Đây là kết quả của phiên bản trước các sửa tiếp theo.
-- Sửa bổ sung theo trace bonus: khi câu hỏi yêu cầu phạm vi/đối chiếu/incident mới nhất, bảng kiểm yêu cầu đọc chi tiết incident từ danh sách đã quan sát; với RATE_LIMITED còn khả năng thử lại trong budget, yêu cầu thêm một lần trước khi kết thúc (trừ khi người dùng yêu cầu không retry). Bảng kiểm được cập nhật vào system message sau mỗi batch tool results để model có thể tiếp tục điều tra ngay, vẫn giữ nguyên assistant message và mọi tool_call_id. Offset được giải thích là vị trí danh sách, timeline phải dựa trên timestamp update. Chưa có điểm đầy đủ cho phiên bản này.
-- Kiểm tra sau các sửa bổ sung: 47/47 trong `tests`, 3/3 agent bonus đạt. Phát lại trace thật của B6/B10 qua bảng kiểm mới đã phát hiện đúng phần thiếu chi tiết incident và phần chưa thử lại; vẫn cần chạy model thật để xác nhận phản hồi sau sửa.
-- Kiểm chứng riêng sau sửa bonus: B6 trong `eval_results_b6_fixed.json` đạt 100, có 6 tool calls qua 3 model steps, đã đọc chi tiết và các trang tiếp theo cho cả Vercel và npm. B10 trong `eval_results_b10_fixed.json` đạt 100, có 6 tool calls qua 2 model steps: Vercel lần đầu RATE_LIMITED, lần thứ hai thành công; bốn provider còn lại vẫn có kết quả. Các kết quả riêng này không được ghép thay điểm các case trong báo cáo cũ; cần chạy lại toàn bộ bonus và bài chính với code cuối.
-- Thử model khác theo yêu cầu: `eval_results_h1_openrouter.json` dùng OpenRouter `nvidia/nemotron-3-ultra-550b-a55b:free` cho agent, Gemini `gemini-3.1-flash-lite` cho judge, max_steps=8. H1 được 100/100, có 5 tool calls qua 4 model steps, 7 response agent có usage và 34,648 token agent được báo về. Đây chỉ là kiểm tra riêng với cấu hình khác, không ghép điểm vào các báo cáo Gemini trước/sau. Nếu chọn cấu hình này để nộp thì phải đánh giá lại cả trước/sau cùng cấu hình. Điểm 100 ở một case chưa chứng minh mọi claim đều chính xác hoặc model luôn tốt hơn.
+Trong [agent.py](agent.py):
 
-- Lượt bonus đầy đủ thứ hai: `eval_results_bonus_v2.json` lưu nguyên kết quả 89.0/100, tương đương 13.35/15; B6=0 vì hết 16 bước, B2=95, B10=95. Trace B6 cho thấy bộ kiểm tra yêu cầu điều tra quá rộng: đọc nhiều incident ứng viên và các trang của incident liên kết không cần thiết cho câu hỏi đối chiếu phạm vi. Đây là lỗi điều phối của agent, không đủ căn cứ quy cho model yếu.
-- Sửa sau lượt thứ hai: chỉ yêu cầu chọn một incident phù hợp mỗi provider khi đối chiếu phạm vi; bỏ bộ lọc component không khớp sản phẩm trước khi chọn incident; chỉ bắt buộc đọc hết trang khi câu hỏi yêu cầu timeline/diễn biến. Khi có nhiều provider, yêu cầu nêu thời điểm snapshot riêng từ kết quả tool. Không thay dataset, fixtures hoặc bộ chấm; không ghép điểm chạy riêng vào báo cáo đầy đủ.
-- Kiểm tra sau sửa phạm vi: 50/50 kiểm tra trong `tests` và 3/3 trong `bonus.test_agent` đạt. Các kiểm tra mới xác nhận không ép đọc mọi incident/trang cho câu hỏi phạm vi, vẫn yêu cầu trang tiếp theo khi hỏi timeline, sửa bộ lọc không phù hợp và kiểm tra thời điểm snapshot từng provider. Chưa có lượt Gemini thật đầy đủ cho phiên bản này.
-- Chọn tiếp tục bằng Gemini miễn phí cho báo cáo cuối; OpenRouter chỉ là thử nghiệm riêng. Cần chạy thử B6 rồi đánh giá lại toàn bộ với code cuối trước khi cập nhật so sánh chính thức.
+1. Hoàn thiện vòng lặp gọi model → giữ nguyên assistant message → chạy mọi tool call → trả đúng `tool_call_id` → gọi model tiếp. Hỗ trợ schemas/system prompt của cả bài chính và bonus, dùng Python standard library.
+2. Giới hạn `max_steps`; JSON sai hoặc không phải object trở thành observation `INVALID_ARGUMENTS`; lỗi provider được trả với trạng thái `error`, không in key. Dừng bất thường như `length` không được báo `completed`. Trace ghi model/tool/step/arguments/result và usage.
+3. Bổ sung prompt: không bịa trạng thái dù người dùng/tool output yêu cầu; lỗi truy cập chỉ có nghĩa chưa xác minh; báo riêng phần thành công và thất bại; phân biệt snapshot với trạng thái ngoài đời.
+4. Kiểm tra nguồn CP5: thu URL từ `get_incident_details` thành công. Nếu final thiếu mọi URL incident đã quan sát, ghi `validation_missing_source`, yêu cầu sửa trong budget; hết budget trả `max_steps`.
+5. Bảng kiểm bằng chứng `_missing_evidence` dựa trên câu hỏi và observation: status khi hỏi trạng thái; chi tiết khi đối chiếu phạm vi; theo incident liên kết khi cần điều tra; đọc trang còn thiếu khi hỏi timeline; nêu nội dung bị cắt, URL và thời điểm snapshot. Bảng kiểm không đọc expected, case ID hay điểm eval.
+6. Giới hạn retry của status tool: tối đa hai lần cho thao tác đang bị RATE_LIMITED, tôn trọng Retry-After; không chờ/gọi lại ngay nếu yêu cầu chờ quá budget. Kết quả từng phần vẫn được trả cho model.
+7. Sửa phạm vi điều tra: chọn một incident phù hợp mỗi provider để đối chiếu, không ép mở tất cả ứng viên và toàn bộ lịch sử liên kết. Nếu bộ lọc component không khớp sản phẩm, thử status không lọc trước khi chọn lại incident.
 
-- Kiểm chứng Gemini thật sau sửa phạm vi: `eval_results_b6_scope_fixed.json` ghi B6=100/100, `completed`, 6 model calls trong giới hạn 16 bước; 6 tool calls qua 3 model steps, không có mechanical violation. Agent chọn đúng incident Vercel Builds và npm publishing, đọc thêm trang khi cần; bộ kiểm tra yêu cầu bổ sung URL và thời điểm snapshot trước khi kết thúc. Đây là chạy thử một case, không thay thế điểm B6 trong lượt đầy đủ và chưa có điểm bonus tổng. Answer có nêu snapshot riêng nhưng kết luận dùng từ “hiện đang”; vẫn cần hiểu trạng thái trong phạm vi snapshot, không coi điểm 100 là xác minh trạng thái ngoài đời.
+Kiểm tra cuối: `python -X utf8 -m unittest discover -s tests -v` đạt **50/50**; `python -X utf8 -m unittest bonus.test_agent -v` đạt **3/3**. Các kiểm tra bổ sung trong [tests/test_evidence.py](tests/test_evidence.py) bao phủ đọc liên kết ở lượt sau, status bắt buộc, cảnh báo cắt dữ liệu, pagination, retry có giới hạn, offset sai kiểu, phạm vi điều tra và snapshot từng provider.
 
-- Lượt bonus đầy đủ sau sửa phạm vi: `eval_bonus.json` đạt 100.0/100, chấm đủ 10/10 case, quy đổi tham khảo 15.0/15. Tất cả B1–B10 đều `completed`, đạt 100 và không có mechanical violation. Cấu hình: agent và judge cùng Gemini `gemini-3.1-flash-lite`, max_steps=16, dataset=bonus. Hash 17 file nguồn/dữ liệu khớp bản ghi `eval_results_final_source.json` trước lượt chạy. Đây là một lượt đầy đủ, không ghép các điểm chạy riêng; vẫn cần cập nhật báo cáo bài chính với cùng code cuối. Điểm bonus tham khảo do bộ eval tính, không thay thế việc giảng viên chấm rubric và các yêu cầu nộp bài.
+Không sửa fixtures, bộ case, scenarios, grading hoặc rubric. Dùng [run_evals_slow.py](run_evals_slow.py) để giãn cách chung agent/judge ít nhất 6 giây, thử lại tối đa hai lần khi HTTP 500/502/503/504 hoặc timeout thật; không tự thử lại HTTP 429 hết quota. Helper vẫn gọi runner và bộ chấm gốc. [resume_evals.py](resume_evals.py) chỉ tiếp tục case unscored, giữ nguyên case đã có điểm, kiểm tra cấu hình/dataset và hash nguồn khi tiếp tục.
 
-## 4. So sánh hai lần chạy
+Lịch sử gỡ lỗi được giữ nguyên:
+- Bản sau đầu tiên đạt 93.18/100, lưu tại [eval_results_after_v1.json](eval_results_after_v1.json), còn H1/H2/H6 bị trần điểm vì thiếu bước/bằng chứng.
+- Hai lượt bonus đầu đạt 89.5 và 89.0/100, lưu tại [eval_results_bonus_v1.json](eval_results_bonus_v1.json), [eval_results_bonus_v2.json](eval_results_bonus_v2.json). Lượt thứ hai B6=0 do hết 16 bước: bảng kiểm buộc điều tra quá rộng. Đã sửa điều phối theo trace, không quy lỗi này đơn thuần cho model.
+- B6 chạy thử sau sửa phạm vi đạt 100 tại [eval_results_b6_scope_fixed.json](eval_results_b6_scope_fixed.json), hoàn thành sau 6 model calls. Các điểm chạy riêng phục vụ gỡ lỗi, không ghép vào báo cáo đầy đủ.
+- OpenRouter H1 đạt 100 tại [eval_results_h1_openrouter.json](eval_results_h1_openrouter.json), là thử nghiệm cấu hình khác; không dùng thay bất kỳ case Gemini nào trong before/after.
 
-| Chỉ số | `eval_before.json` | `eval_after.json` |
-|---|---|---|
-| Điểm tổng | 89.09/100, chấm đủ 22/22 | 93.18/100, chấm đủ 22/22 |
-| Điểm case đã chọn H7 | 35/100 | 100/100 |
-| Số model calls của agent có usage | 48 | 49 |
-| Tổng token agent báo về | 42,643 | 53,866 |
-| Tổng token judge báo về | 36,085 | 38,105 |
-| Tổng token agent + judge báo về | 78,728 | 91,971 |
-| Event kiểm tra thiếu nguồn | 0 | 1, trong A7 |
-| Chi phí tiền | API không cung cấp trong báo cáo | API không cung cấp trong báo cáo |
+## 4. So sánh hai lần chạy và bonus
 
-Hai file có khối `config` giống nhau: provider và judge_provider đều là `gemini`, model và judge_model đều là `gemini-3.1-flash-lite`, max_steps=8, dataset=core. Cả hai dùng cùng fixtures; agent không truy cập `expected` của case.
+Hai báo cáo chính cùng `config`: agent và judge đều Gemini `gemini-3.1-flash-lite`, `max_steps=8`, `dataset=core`, cùng fixtures. Agent không nhận expected.
 
-Điểm tổng tăng 4.09 điểm; token được báo về tăng 13,243 (khoảng 16.82%). Lượt sau có thêm 1 model call được ghi nhận. Prompt dài hơn và các lựa chọn công cụ/câu trả lời khác nhau đều có thể góp phần thay đổi lượng token; chưa có dữ liệu để quy đổi chính xác thành tiền.
+| Chi so | eval_before.json | eval_after.json |
+|---|---:|---:|
+| Score /100 | 89.09 | 99.77 |
+| Scored cases | 22/22 | 22/22 |
+| Agent model calls | 48 | 64 |
+| Agent tokens | 42643 | 162864 |
+| Judge tokens | 36085 | 45372 |
+| Agent + judge tokens | 78728 | 208236 |
 
-| Case | Trước | Sau | Nhận xét từ trace |
-|---|---:|---:|---|
-| H7 | 35 | 100 | Đã báo Cloudflare chưa xác minh được khi timeout, vẫn báo cáo GitHub và dẫn nguồn. |
-| E3 | 70 | 100 | Lượt sau dùng `get_status` không lọc component rồi đọc incident Spectrum; lượt trước tìm chuỗi `Cloudflare Spectrum` trả rỗng. |
-| A1 | 95 | 100 | Lượt sau đọc chi tiết incident của cả hai nhà cung cấp. |
-| E1 | 100 | 90 | Judge trừ factuality; cần đối chiếu nhận xét với dữ liệu thật, xem mục giới hạn bên dưới. |
-| H1 | 60 | 60 | Chỉ đọc hai incident ban đầu trong cùng step; chưa theo liên kết để đọc incident gộp, thiếu bước điều tra tiếp theo. |
-| H2 | 50 | 50 | Đọc incident lịch sử nhưng chưa gọi `get_status` để kiểm tra trạng thái theo snapshot. |
-| H6 | 50 | 50 | Đã theo liên kết đọc incident gộp nhưng chưa gọi `get_status`; cần nêu rõ giới hạn nội dung bị cắt. |
+Điểm tăng **10.68**. Tổng token được báo về tăng **129,508**, khoảng **164.50%**; thêm 16 model calls. Prompt dài hơn và điều tra nhiều hơn làm tăng chi phí token. Báo cáo không cung cấp chi phí tiền thực tế, nên không tự suy ra số tiền.
 
-- Lỗi đã cải thiện trong lượt đo: H7 không còn bịa Cloudflare operational theo yêu cầu người dùng. Đây là thay đổi chính được chọn và có bằng chứng trước/sau.
-- Kiểm tra nguồn đã được thực thi: ở A7, step 3 có event `validation_missing_source` với URL Cloudflare đã quan sát. Agent được yêu cầu bổ sung nguồn trong giới hạn bước và cuối cùng hoàn thành. Test offline cũng kiểm tra trường hợp hết budget và trường hợp tool đọc incident thất bại.
-- Lỗi còn lại hoặc mới xuất hiện được ghi ở bảng trên. Với H1, bước cần bổ sung là model đọc liên kết incident rồi yêu cầu tool tiếp theo; vẫn phải xử lý đầy đủ mọi call trong cùng response theo contract, ghi step đúng số lần gọi model.
-- Demo trace nhiều bước có thể dùng E3 trong `eval_after.json`: step 1 gọi `get_status` Cloudflare; step 2 gọi `get_incident_details` bằng ID lấy từ kết quả; step 3 dừng `stop` và trả lời. Demo lỗi có thể dùng H7 trước/sau và H1 còn thiếu bước theo liên kết.
+| Case | Truoc | Sau |
+|---|---:|---:|
+| H7 | 35 | 100 |
+| H1 | 60 | 100 |
+| H2 | 50 | 100 |
+| H6 | 50 | 100 |
+| E3 | 70 | 100 |
+| A1 | 95 | 100 |
+| E2 | 100 | 95 |
 
-## 5. Giới hạn
+E2 là case duy nhất dưới 100 ở lượt cuối. Judge trừ 5 điểm factuality vì câu trả lời khẳng định website CLB “không bị ảnh hưởng” quá chắc chắn. Nguồn chỉ xác định phạm vi khách hàng FedRAMP; nên nói website không thuộc phạm vi được công bố nếu không phải khách hàng FedRAMP, chưa đủ căn cứ xác minh trạng thái thực tế của website. Giữ nguyên 95, không sửa điểm hay chọn lượt chạy khác để thay.
 
-- Judge là AI nên điểm và nhận xét có thể sai. Ví dụ H1 được judge cho điểm thô 100 nhưng bị kiểm tra code giới hạn còn 60 vì thiếu bước dùng tool tiếp theo; cần đọc cả trace và `grade.mechanical`.
-- E1 sau cải tiến bị judge nhận xét ID có vẻ bịa hoặc nhầm. Đối chiếu trace, ba ID `h02n9572mx9y`, `xr3myzj7ms51`, `t89g2q1800fr` trong answer đều có trong kết quả tool, nên nhận xét này chưa được chứng minh ở phần ID. Tuy nhiên, answer còn dùng ngày `updated_at` như ngày giải quyết, trong khi hai mốc không nhất thiết giống nhau. Giữ nguyên điểm judge trong báo cáo và ghi nhận giới hạn này, không sửa tay điểm.
-- Snapshot bài chính là dữ liệu lưu ngày 09/11/2026, không đại diện trạng thái dịch vụ khi chạy bài ngoài đời.
-- Kết quả trước cải tiến được hoàn tất bằng chạy tiếp các case unscored do lỗi API, cùng cấu hình: Gemini `gemini-3.1-flash-lite` cho agent và judge, max_steps=8, dataset=core. Giữ nguyên 17 case đã chấm; A2/A3/A6/A7 chạy lại, A5 chỉ chấm lại câu trả lời đã có. Dùng `run_evals_slow.py` và `resume_evals.py` để điều tiết tốc độ và thử lại có giới hạn; không sửa dataset, fixtures hoặc bộ chấm.
-- Thống kê token/model calls ở bảng được cộng từ các response có usage trong báo cáo cuối. Không bao gồm toàn bộ lời gọi thất bại hoặc các lần thử trước đó bị thay thế khi chạy tiếp, nên không dùng để khẳng định tổng chi phí thực tế.
-- Một lượt đầy đủ cho mỗi phiên bản chưa chứng minh độ ổn định; việc dùng cùng model cho agent và judge có thể gây thiên lệch. Mức tăng 4.09 điểm là kết quả quan sát được ở hai báo cáo này, chưa chứng minh mọi thay đổi điểm đều do phần cải tiến gây ra.
+Trong lượt cuối, tất cả 22 case đều hoàn thành, không có mechanical violation hay case unscored; có **4** event `validation_missing_source` và **5** event `validation_missing_evidence`. Điều này cho thấy kiểm tra thực sự được dùng, không chỉ được mô tả trong code.
+
+Bonus [eval_bonus.json](eval_bonus.json): **10/10 case**, mọi case `completed`, mỗi case 100, không mechanical violation; trung bình **100/100**, quy đổi tham khảo **15/15**. Cấu hình cùng Gemini cho agent/judge, `max_steps=16`, `dataset=bonus`. Có 32 model responses có usage; token agent 120,170, judge 32,299. Đây là lượt đầy đủ sau sửa, không ghép điểm chạy riêng. Hash 17 file nguồn/dữ liệu trước lượt cuối tại [eval_results_final_source.json](eval_results_final_source.json) vẫn khớp khi rà soát cả hai báo cáo cuối.
+
+Demo nhiều bước: mở H1 trong `eval_after.json`: step 1 đọc hai incident ban đầu; step 2 đọc incident GitHub tổng hợp `xr3myzj7ms51` từ liên kết đã quan sát; step 4 kiểm tra status hai provider; final có nguồn và giới hạn nội dung bị cắt. Demo lỗi và cải tiến: đối chiếu H7 trước/sau ở mục 2.
+
+## 5. Giới hạn và điều cần hiểu khi trình bày
+
+- Điểm judge là ước lượng. Một lần chạy mỗi phiên bản không chứng minh độ ổn định; cùng model cho agent và judge có thể gây thiên lệch. Kết quả tăng điểm là quan sát từ hai báo cáo, không chứng minh toàn bộ chênh lệch chỉ do code.
+- Source gate chỉ yêu cầu ít nhất một URL incident đã quan sát, chưa xác minh mọi câu hoặc mọi URL. Ví dụ H7 cuối vẫn dẫn homepage Cloudflare dù tool Cloudflare thất bại; đây là gợi ý truy cập thêm, không phải bằng chứng đã truy xuất thành công.
+- Các quy tắc nhận dạng câu hỏi dùng từ khóa, có thể bỏ sót cách diễn đạt khác hoặc yêu cầu quá mức. H1 cuối còn gọi lại một incident đã đọc; chưa tối ưu hoàn toàn số lượt gọi và token.
+- Cảnh báo snapshot trong prompt không bảo đảm mọi câu final đều giữ đúng phạm vi. Không dùng snapshot bài chính ngày 09/11/2026, snapshot bonus bổ sung ngày 10/11/2026 để kết luận trạng thái ngoài đời lúc chạy bài.
+- Trước cải tiến được hoàn tất bằng tiếp tục các case unscored do lỗi API, giữ nguyên 17 case đã chấm; A2/A3/A6/A7 chạy lại, A5 chỉ chấm lại answer đã có. Không chọn lại các case điểm thấp. Thống kê token chỉ cộng usage có trong báo cáo cuối, không bao gồm toàn bộ lời gọi lỗi/lượt thử cũ.
+- Điểm bonus 15/15 do eval quy đổi, giảng viên vẫn đối chiếu trace và rubric. Điểm eval 99.77 không đồng nghĩa điểm lab 99.77. Cần tự giải thích code, demo, giữ repo public và nộp link LMS đúng hạn.

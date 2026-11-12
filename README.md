@@ -3,6 +3,7 @@
 - Mã bài làm: [agent.py](agent.py); phân tích đủ 5 mục: [NOTES.md](NOTES.md).
 - Kết quả trước/sau: [eval_before.json](eval_before.json), [eval_after.json](eval_after.json), cùng cấu hình Gemini `gemini-3.1-flash-lite`, 22 case, max_steps=8.
 - Bonus: [eval_bonus.json](eval_bonus.json), đủ 10 case; xem điểm và giới hạn trong NOTES.
+- Kết quả cuối: bài chính 89.09 → **99.77/100**; bonus **100/100**, quy đổi tham khảo **15/15**. Điểm eval khác điểm lab theo rubric.
 - Kiểm tra không cần API key: `python -X utf8 -m unittest discover -s tests -v` và `python -X utf8 -m unittest bonus.test_agent -v`.
 - Chạy eval tiết kiệm hạn mức: `python -X utf8 run_evals_slow.py --provider gemini --model gemini-3.1-flash-lite --judge-provider gemini --judge-model gemini-3.1-flash-lite --max-steps 8 --output eval_after.json`. Cần đặt `GEMINI_API_KEY` trong terminal; không lưu key vào repo. Bonus thêm `--bonus`, dùng `--max-steps 16` và `--output eval_bonus.json`.
 
